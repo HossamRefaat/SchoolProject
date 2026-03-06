@@ -6,9 +6,7 @@ using SchoolProject.Core.Features.Students.Queries.Models;
 using SchoolProject.Core.Features.Students.Queries.Results;
 using SchoolProject.Core.Resources;
 using SchoolProject.Core.Wrappers;
-using SchoolProject.Data.Entities;
 using SchoolProject.Service.Abstracts;
-using System.Linq.Expressions;
 
 namespace SchoolProject.Core.Features.Students.Queries.Handlers
 {
@@ -59,18 +57,8 @@ namespace SchoolProject.Core.Features.Students.Queries.Handlers
 
         public async Task<PaginatedResult<GetStudentListPaginatedResponse>> Handle(GetStudentPagenatedListQuery request, CancellationToken cancellationToken)
         {
-            Expression<Func<Student, GetStudentListPaginatedResponse>> expression = student => new GetStudentListPaginatedResponse
-            {
-                StudID = student.StudID,
-                Name = student.GetLocal(student.NameAr, student.NameEn),
-                Address = student.Address,
-                DepartmentName = student.Department != null ? student.GetLocal(student.Department.DNameAr, student.Department.DNameEn) : null
-            };
-            //var querable = _studentService.GetStudentsQueryable();
             var filterQuery = _studentService.FilterStudentPaginatedQuerable(request.Order, request.Search);
-            var studentPaginatedList = await filterQuery
-                .Select(expression)
-                .ToPaginatedListAsync(request.PageNumber, request.PageSize);
+            var studentPaginatedList = await _mapper.ProjectTo<GetStudentListPaginatedResponse>(filterQuery).ToPaginatedListAsync(request.PageNumber, request.PageSize);
             studentPaginatedList.Meta = new { Count = studentPaginatedList.Data.Count() };
             return studentPaginatedList;
         }

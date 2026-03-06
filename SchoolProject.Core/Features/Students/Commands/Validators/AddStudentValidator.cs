@@ -11,16 +11,19 @@ namespace SchoolProject.Core.Features.Students.Commands.Validators
         #region Fields
         private readonly IStudentService _studentService;
         private readonly IStringLocalizer<SharedResources> _localizer;
+        private readonly IDepartmentService _departmentService;
         #endregion
 
         #region Constructor
         public AddStudentValidator(IStudentService studentService,
-                                    IStringLocalizer<SharedResources> localizer)
+                                    IStringLocalizer<SharedResources> localizer,
+                                    IDepartmentService departmentService)
         {
             _studentService = studentService;
             _localizer = localizer;
             ApplyValidationRules();
             ApplyCustomValidationRules();
+            _departmentService = departmentService;
         }
         #endregion
 
@@ -39,6 +42,10 @@ namespace SchoolProject.Core.Features.Students.Commands.Validators
                 .NotEmpty().WithMessage(_localizer[SharedResourcesKeys.NotEmpty])
                 .NotNull().WithMessage(_localizer[SharedResourcesKeys.Required])
                 .MaximumLength(100).WithMessage(_localizer[SharedResourcesKeys.MaxLengthis100]);
+
+            RuleFor(x => x.DepartmentId)
+                .NotEmpty().WithMessage(_localizer[SharedResourcesKeys.NotEmpty])
+                .NotNull().WithMessage(_localizer[SharedResourcesKeys.Required]);
         }
 
         public void ApplyCustomValidationRules()
@@ -70,6 +77,11 @@ namespace SchoolProject.Core.Features.Students.Commands.Validators
             RuleFor(x => x.NameEn)
                .MustAsync(async (key, CancellationToken) => !await _studentService.IsNameExistsAsync(key))
                .WithMessage(_localizer[SharedResourcesKeys.IsExist]);
+
+
+            RuleFor(x => x.DepartmentId)
+               .MustAsync(async (key, CancellationToken) => await _departmentService.IsDepartmentExist(key))
+               .WithMessage(_localizer[SharedResourcesKeys.IsNotExist]);
         }
         #endregion
 
