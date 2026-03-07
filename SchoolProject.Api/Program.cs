@@ -6,6 +6,7 @@ using SchoolProject.Core;
 using SchoolProject.Core.MiddleWares;
 using SchoolProject.infrastructure;
 using SchoolProject.Infrastructure.Data;
+using SchoolProject.Infrustructure;
 using SchoolProject.Service;
 using System.Globalization;
 
@@ -35,7 +36,8 @@ namespace SchoolProject.Api
             builder.Services
                 .AddCoreDependancies()
                 .AddInfrastructureDependancies()
-                .AddServiceDependancies();
+                .AddServiceDependancies()
+                .AddServiceRegisteration();
             #endregion
 
             #region Localization
