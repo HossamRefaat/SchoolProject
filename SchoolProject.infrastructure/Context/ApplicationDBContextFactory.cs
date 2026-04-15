@@ -26,7 +26,10 @@ namespace SchoolProject.Infrastructure.Data
             // Build options
             var optionsBuilder = new DbContextOptionsBuilder<ApplicationDBContext>();
             var connectionString = configuration.GetConnectionString("dbcontext");
-            optionsBuilder.UseSqlServer(connectionString);
+            optionsBuilder.UseMySql(    
+                connectionString, 
+                ServerVersion.AutoDetect(connectionString)
+            );
 
             return new ApplicationDBContext(optionsBuilder.Options);
         }

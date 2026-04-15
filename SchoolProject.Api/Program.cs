@@ -27,10 +27,11 @@ namespace SchoolProject.Api
 
 
             //Connection SQL
-            builder.Services.AddDbContext<ApplicationDBContext>(option =>
-            {
-                option.UseSqlServer(builder.Configuration.GetConnectionString("dbcontext"));
-            });
+            builder.Services.AddDbContext<ApplicationDBContext>(options =>
+                options.UseMySql(
+                    builder.Configuration.GetConnectionString("dbcontext"),
+                    ServerVersion.AutoDetect(builder.Configuration.GetConnectionString("dbcontext"))
+                ));
 
             #region Dependancy Injections
             builder.Services
