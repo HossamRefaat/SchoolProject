@@ -9,5 +9,6 @@ public partial class ApplicationUserProfile : Profile
         AddUserMapping();
         GetUserPaginationMapping();
         GetUserByIdMapping();
+        UpdateUserMapping();
     }
 }
