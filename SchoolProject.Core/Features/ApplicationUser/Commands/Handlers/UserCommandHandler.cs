@@ -12,7 +12,8 @@ namespace SchoolProject.Core.Features.ApplicationUser.Commands.Handlers;
 
 public class UserCommandHandler : ResponseHandler,
                                   IRequestHandler<AddUserCommand, Response<string>>,
-                                  IRequestHandler<UpdateUserCommand, Response<string>>
+                                  IRequestHandler<UpdateUserCommand, Response<string>>,
+                                  IRequestHandler<DeleteUserCommand, Response<string>>
 {
     #region Fields
     private readonly IMapper mapper;
@@ -67,6 +68,16 @@ public class UserCommandHandler : ResponseHandler,
         //result is not success
         if(!res.Succeeded)return BadRequest<string>(stringLocalizer[SharedResourcesKeys.UpdateFailed]);
         return Success((string)stringLocalizer[SharedResourcesKeys.Updated]);
+    }
+
+    public async Task<Response<string>> Handle(DeleteUserCommand request, CancellationToken cancellationToken)
+    {
+        var user = await userManager.Users.FirstOrDefaultAsync(u => u.Id == request.Id);
+        if (user == null)
+            return NotFound<string>(stringLocalizer[SharedResourcesKeys.NotFound]);
+        var res = await userManager.DeleteAsync(user);
+        if (!res.Succeeded) return BadRequest<string>(stringLocalizer[SharedResourcesKeys.DeletedFailed]);
+        return Success((string)stringLocalizer[SharedResourcesKeys.Deleted]);
     }
     #endregion
 }
