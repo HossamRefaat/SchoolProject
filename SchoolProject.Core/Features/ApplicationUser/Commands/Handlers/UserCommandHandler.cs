@@ -76,6 +76,7 @@ public class UserCommandHandler : ResponseHandler,
 
         //result is not success
         if(!res.Succeeded)return BadRequest<string>(stringLocalizer[SharedResourcesKeys.UpdateFailed]);
+        
         return Success((string)stringLocalizer[SharedResourcesKeys.Updated]);
     }
 
