@@ -2,6 +2,7 @@
 using MediatR;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Localization;
+using Microsoft.IdentityModel.Tokens;
 using SchoolProject.Core.Bases;
 using SchoolProject.Core.Features.Authentication.Command.Models;
 using SchoolProject.Core.Resources;
@@ -12,7 +13,8 @@ using SchoolProject.Service.Abstracts;
 namespace SchoolProject.Core.Features.Authentication.Command.Handlers;
 
 public class AuthenticationCommandHandler : ResponseHandler,
-                                          IRequestHandler<SignInCommand, Response<JwtAuthRsult>>
+                                          IRequestHandler<SignInCommand, Response<JwtAuthRsult>>,
+                                          IRequestHandler<RefreshTokenCommand, Response<JwtAuthRsult>>
 {
     #region Fields
     private readonly IStringLocalizer<SharedResources> _localizer;
@@ -53,5 +55,29 @@ public class AuthenticationCommandHandler : ResponseHandler,
         return Success(token);
 
     }
-    #endregion  
+
+    public async Task<Response<JwtAuthRsult>> Handle(RefreshTokenCommand request, CancellationToken cancellationToken)
+    {
+        var jwtToken = _authenticationService.ReadJWTToken(request.AccessToken);    
+        var userIdAndExpiryDate = await _authenticationService.ValidateDetails(jwtToken, request.AccessToken, request.RefreshToken);
+        switch(userIdAndExpiryDate)
+        {
+            case ("Algorithm is not valid", null):
+                return Unauthorized<JwtAuthRsult>(_localizer[SharedResourcesKeys.AlgorithmIsWrong]);
+            case ("Access token is not expired yet", null):
+                return BadRequest<JwtAuthRsult>(_localizer[SharedResourcesKeys.TokenIsNotExpired]);
+            case ("Refresh token does not exist", null):
+                return BadRequest<JwtAuthRsult>(_localizer[SharedResourcesKeys.RefreshTokenIsNotFound]);
+            case ("Refresh token is expired", null):
+                return BadRequest<JwtAuthRsult>(_localizer[SharedResourcesKeys.RefreshTokenIsExpired]);
+        }
+        var (userId, expiryDate) = userIdAndExpiryDate;
+        var user = await _userManager.FindByIdAsync(userId);
+        if(user == null)
+            return NotFound<JwtAuthRsult>(_localizer[SharedResourcesKeys.UserIsNotFound]);
+        
+        var result = await _authenticationService.GetRefreshToken(user, jwtToken, expiryDate, request.RefreshToken);
+        return Success(result);
+    }
+    #endregion
 }
