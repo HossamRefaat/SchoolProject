@@ -43,5 +43,19 @@
             public const string RefreshToken = Prefix + "/RefreshToken";
             public const string ValidateToken = Prefix + "/ValidateToken";
         } 
+
+        public static class Authorization
+        {
+            public const string Prefix = Rule + "Authorization";
+            public const string Create = Prefix + "/Role/Create";
+            public const string Edit = Prefix + "/Role/Edit";
+            public const string Delete = Prefix + "/Role/Delete";
+            public const string GetRolesList = Prefix + "/Role/List";
+            public const string GetRoleById = Prefix + "/Role/Get-Role-By-Id/{Id}";
+            public const string ManageUserRoles = Prefix + "/Role/Manage-User-Roles/{UserId}";
+            public const string UpdateUserRoles = Prefix + "/Role/Update-User-Roles";
+            public const string ManageUserClaims = Prefix + "/Claims/Manage-User-Claims/{UserId}";
+            public const string UpdateUserClaims = Prefix + "/Claims/Update-User-Claims";
+        }
     }
 }

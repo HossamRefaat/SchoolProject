@@ -1,0 +1,37 @@
+﻿using FluentValidation;
+using Microsoft.Extensions.Localization;
+using SchoolProject.Core.Features.Authorization.Commands.Models;
+using SchoolProject.Core.Resources;
+
+namespace SchoolProject.Core.Features.Authorization.Commands.Validators;
+
+public class DeleteRoleValidator : AbstractValidator<DeleteRoleCommand>
+{
+    #region Fields
+    private readonly IStringLocalizer<SharedResources> _localizer;
+    #endregion
+
+    #region Constructor
+    public DeleteRoleValidator(IStringLocalizer<SharedResources> localizer
+                             )
+    {
+        _localizer = localizer;
+        ApplyValidationRules();
+        ApplyCustomValidationRules();
+    }
+    #endregion
+
+    #region Methods
+    private void ApplyValidationRules()
+    {
+        RuleFor(x => x.Id)
+            .NotEmpty().WithMessage(_localizer[SharedResourcesKeys.NotEmpty])
+            .NotNull().WithMessage(_localizer[SharedResourcesKeys.Required]);
+    }
+
+    private void ApplyCustomValidationRules()
+    {
+
+    }
+    #endregion
+}

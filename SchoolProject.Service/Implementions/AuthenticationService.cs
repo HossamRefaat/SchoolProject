@@ -38,7 +38,7 @@ public class AuthenticationService : IAuthenticationService
     #region Methods
     public async Task<JwtAuthRsult> GetJWTToken(User user)
     {
-        var (accessToken, accessTokenString) = GenerateJWTToken(user);
+        var (accessToken, accessTokenString) = await GenerateJWTToken(user);
         var refreshToken = GetRefreshToken(user.UserName);
         var userRefreshToken = new UserRefreshToken
         {
@@ -65,7 +65,7 @@ public class AuthenticationService : IAuthenticationService
     public async Task<JwtAuthRsult> GetRefreshToken(User user, JwtSecurityToken jwtToken, DateTime? expireDate, string refreshToken)
     {
         
-        var (jwtSecurityToken, accessTokenString) = GenerateJWTToken(user);
+        var (jwtSecurityToken, accessTokenString) = await GenerateJWTToken(user);
 
         var response = new JwtAuthRsult();
         response.AccessToken =  accessTokenString;
@@ -97,7 +97,7 @@ public class AuthenticationService : IAuthenticationService
         {
             var validator = tokenHandler.ValidateToken(accessToken, parameters, out SecurityToken validatedToken);
             if(validator == null)
-                throw new SecurityTokenException("Invalid token");
+                return ("Invalid token");
 
             return "Success";
         }
@@ -107,16 +107,25 @@ public class AuthenticationService : IAuthenticationService
         }
     }
 
-    private (JwtSecurityToken, string) GenerateJWTToken(User user)
+    private async Task<(JwtSecurityToken, string)> GenerateJWTToken(User user)
     {
-        var claims = new[]
+        var userRoles = await _userManager.GetRolesAsync(user);
+        
+        var claims = new List<Claim>()
         {
-            new Claim(nameof(UserClaimModel.UserName), user.UserName),
-            new Claim(nameof(UserClaimModel.Email), user.Email),
+            new Claim(nameof(UserClaimModel.Id), user.Id.ToString()),
             new Claim(nameof(UserClaimModel.PhoneNumber), user.PhoneNumber),
-            new Claim(nameof(UserClaimModel.Id), user.Id.ToString())
+            new Claim(ClaimTypes.Name, user.UserName),
+            new Claim(ClaimTypes.NameIdentifier, user.UserName),
+            new Claim(ClaimTypes.Email, user.Email),
+            new Claim(ClaimTypes.Role, "Admin"),
         };
-
+        foreach (var role in userRoles)
+        {
+            claims.Add(new Claim(ClaimTypes.Role, role));
+        }
+        var userClaims = await _userManager.GetClaimsAsync(user);
+        claims.AddRange(userClaims);
         var accessToken = new JwtSecurityToken( issuer: _jwtSettings.Issuer,
                                                 audience: _jwtSettings.Audience,
                                                 claims: claims,

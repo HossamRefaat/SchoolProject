@@ -53,6 +53,11 @@ public class UserCommandHandler : ResponseHandler,
         if (!createdUser.Succeeded)            
             return BadRequest<string>(createdUser.Errors.FirstOrDefault()?.Description);
 
+        var users = await userManager.Users.ToListAsync();
+
+        if(users.Count == 0) await userManager.AddToRoleAsync(user, "Admin");
+        else await userManager.AddToRoleAsync(user, "User");
+        
         return Created("");
     }
 
@@ -106,8 +111,8 @@ public class UserCommandHandler : ResponseHandler,
         var result = await userManager.ChangePasswordAsync(user, request.CurrnetPassword, request.NewPassword);
         if (!result.Succeeded)
             return BadRequest<string>(result.Errors.FirstOrDefault()?.Description);
-
-        return Success((string)stringLocalizer[SharedResourcesKeys.Success]);
+        
+        return Success((string)stringLocalizer[SharedResourcesKeys.Success]);   
     }
     #endregion
 }
